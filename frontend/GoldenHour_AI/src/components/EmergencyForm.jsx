@@ -7,6 +7,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
     patientName: '',
     age: '',
     gender: '',
+    contact: '',
     bloodPressure: '',
     heartRate: '',
     oxygenLevel: '',
@@ -34,6 +35,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
       patientName: formData.patientName,
       age: formData.age,
       gender: formData.gender,
+      contact: formData.contact,
       vitals: {
         bloodPressure: formData.bloodPressure,
         heartRate: formData.heartRate ? parseInt(formData.heartRate) : null,
@@ -56,6 +58,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
           patientName: '',
           age: '',
           gender: '',
+          contact: '',
           bloodPressure: '',
           heartRate: '',
           oxygenLevel: '',
@@ -74,6 +77,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
       patientName: 'Rajesh Kumar',
       age: '40-45',
       gender: 'Male',
+      contact: '+91 9876543210',
       bloodPressure: '140/90',
       heartRate: '95',
       oxygenLevel: '92',
@@ -177,6 +181,19 @@ export default function EmergencyForm({ onEmergencyCreated }) {
                 ))}
               </select>
             </div>
+          </div>
+
+
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Contact Number</label>
+            <input
+              type="tel"
+              name="contact"
+              value={formData.contact}
+              onChange={handleChange}
+              style={styles.input}
+              placeholder="e.g., +91 9876543210"
+            />
           </div>
         </div>
 
