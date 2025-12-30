@@ -1,5 +1,5 @@
-from agents.base_agent import BaseAgent
-from models.schemas import TriageInput
+from src.agents.base_agent import BaseAgent
+from src.models.schemas import TriageInput
 
 class TriageAgent(BaseAgent):
 

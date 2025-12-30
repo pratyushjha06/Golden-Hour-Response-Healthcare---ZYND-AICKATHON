@@ -1,4 +1,4 @@
-from agents.base_agent import BaseAgent
+from src.agents.base_agent import BaseAgent
 from src.services.maps_service import maps_service
 
 class HospitalAgent(BaseAgent):
