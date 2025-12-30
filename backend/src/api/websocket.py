@@ -4,12 +4,8 @@ import json
 
 router = APIRouter()
 
-
 class ConnectionManager:
-    """
-    Manages active WebSocket connections
-    """
-
+    """Manages active WebSocket connections"""
     def __init__(self):
         self.active_connections: list[WebSocket] = []
 
@@ -27,12 +23,10 @@ class ConnectionManager:
         for connection in self.active_connections:
             await connection.send_text(json.dumps(message))
 
-
 manager = ConnectionManager()
 
-
-@router.websocket("/ws/emergency")
-async def emergency_websocket(websocket: WebSocket):
+@router.websocket("/ws/emergency/{emergency_id}")
+async def emergency_websocket(websocket: WebSocket, emergency_id: str):
     """
     WebSocket endpoint for real-time emergency updates
     """
@@ -40,18 +34,15 @@ async def emergency_websocket(websocket: WebSocket):
 
     try:
         while True:
-            # Receive emergency request from frontend
             data = await websocket.receive_text()
             request_data = json.loads(data)
 
             await manager.send_message(websocket, {
                 "status": "received",
-                "message": "Emergency request received"
+                "message": f"Emergency request received for {emergency_id}"
             })
 
-            # --- Simulate orchestration steps ---
-            # NOTE: For WebSocket, frontend should send the same payload as /emergency
-
+            # --- Create dummy request object to pass to orchestrator ---
             class DummyRequest:
                 def __init__(self, payload):
                     self.location = type("obj", (), payload["location"])
@@ -63,7 +54,7 @@ async def emergency_websocket(websocket: WebSocket):
 
             dummy_request = DummyRequest(request_data)
 
-            # No background tasks in WebSocket
+            # Run orchestrator (no background tasks for WS)
             response = await orchestrator.handle_emergency(
                 dummy_request,
                 background_tasks=None
@@ -76,4 +67,4 @@ async def emergency_websocket(websocket: WebSocket):
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
-        print("WebSocket disconnected")
+        print(f"WebSocket disconnected: {emergency_id}")
