@@ -6,6 +6,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
   const [formData, setFormData] = useState({
     patientName: '',
     age: '',
+    gender: '',
     bloodPressure: '',
     heartRate: '',
     oxygenLevel: '',
@@ -32,6 +33,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
     const emergencyData = {
       patientName: formData.patientName,
       age: formData.age,
+      gender: formData.gender,
       vitals: {
         bloodPressure: formData.bloodPressure,
         heartRate: formData.heartRate ? parseInt(formData.heartRate) : null,
@@ -53,6 +55,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
         setFormData({
           patientName: '',
           age: '',
+          gender: '',
           bloodPressure: '',
           heartRate: '',
           oxygenLevel: '',
@@ -69,7 +72,8 @@ export default function EmergencyForm({ onEmergencyCreated }) {
   const fillTestData = () => {
     setFormData({
       patientName: 'Rajesh Kumar',
-      age: '40-50',
+      age: '40-45',
+      gender: 'Male',
       bloodPressure: '140/90',
       heartRate: '95',
       oxygenLevel: '92',
@@ -106,6 +110,10 @@ export default function EmergencyForm({ onEmergencyCreated }) {
   ];
 
 
+  // Gender options
+  const genderOptions = ['Male', 'Female', 'Others'];
+
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -134,21 +142,41 @@ export default function EmergencyForm({ onEmergencyCreated }) {
           </div>
 
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Age</label>
-            <select
-              name="age"
-              value={formData.age}
-              onChange={handleChange}
-              style={styles.select}
-            >
-              <option value="">Select age range</option>
-              {ageRanges.map((range) => (
-                <option key={range} value={range}>
-                  {range} years
-                </option>
-              ))}
-            </select>
+          <div style={styles.row}>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Age</label>
+              <select
+                name="age"
+                value={formData.age}
+                onChange={handleChange}
+                style={styles.select}
+              >
+                <option value="">Select age range</option>
+                {ageRanges.map((range) => (
+                  <option key={range} value={range}>
+                    {range} years
+                  </option>
+                ))}
+              </select>
+            </div>
+
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Gender</label>
+              <select
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                style={styles.select}
+              >
+                <option value="">Select gender</option>
+                {genderOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
