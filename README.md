@@ -127,15 +127,36 @@ backend/src/api/
 
 ```bash
 git clone https://github.com/Khushi5155/Golden-Hour-Response-Healthcare---ZYND-AICKATHON.git
+cd Golden-Hour-Response-Healthcare---ZYND-AICKATHON
+
 ```
 
 ### 2️⃣ Backend Setup
 
 ```bash
 cd backend
+python -m venv venv
+venv\Scripts\activate
+
 pip install -r requirements.txt
-python src/main.py
+
 ```
+#### Run the backend 
+
+```bash
+uvicorn src.main:app --reload
+
+```
+#### Backend URL 
+```bash
+http://localhost:8000
+```
+
+#### API Documentation (Swagger UI)
+```bash
+http://localhost:8000/docs
+```
+
 
 ### 3️⃣ Frontend Setup
 
@@ -143,16 +164,22 @@ python src/main.py
 cd frontend/GoldenHour_AI
 npm install
 npm run dev
+
 ```
+## Screenshots
 
 ---
 
 ## 🎯 Hackathon Alignment
 
 ✔ Multi-Agent Architecture
+
 ✔ ZYND Protocol Integration
+
 ✔ Real-Time Coordination
+
 ✔ Healthcare Impact
+
 ✔ Scalable & Extensible Design
 
 ---
