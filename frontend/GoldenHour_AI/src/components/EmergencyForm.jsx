@@ -6,6 +6,7 @@ import L from 'leaflet';
 import { useTriageEmergency } from '../hooks/useTriageEmergency';
 import { useEmergencyStatus } from '../hooks/useEmergencyStatus';
 
+
 // Fix for default marker icon issue in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -13,6 +14,7 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
+
 
 // Component to update map center dynamically
 function ChangeMapView({ center, zoom }) {
@@ -30,6 +32,7 @@ function ChangeMapView({ center, zoom }) {
   return null;
 }
 
+
 // Component to handle map clicks
 function LocationMarker({ position, setPosition, setFormData, formData }) {
   useMapEvents({
@@ -45,12 +48,14 @@ function LocationMarker({ position, setPosition, setFormData, formData }) {
     },
   });
 
+
   return position === null ? null : (
     <Marker position={position}>
       <Popup>Selected Location</Popup>
     </Marker>
   );
 }
+
 
 export default function EmergencyForm({ onEmergencyCreated }) {
   const navigate = useNavigate();
@@ -70,6 +75,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
     address: ''
   });
 
+
   const [showMap, setShowMap] = useState(false);
   const [mapCenter, setMapCenter] = useState([28.7041, 77.1025]); // Default: Delhi
   const [markerPosition, setMarkerPosition] = useState(null);
@@ -77,8 +83,10 @@ export default function EmergencyForm({ onEmergencyCreated }) {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
 
+
   // Hook for submitting emergency
   const { mutate: submitEmergency, isPending: isSubmitting, error: submitError } = useTriageEmergency();
+
 
   // Hook for polling emergency status
   const { 
@@ -102,12 +110,14 @@ export default function EmergencyForm({ onEmergencyCreated }) {
     }
   });
 
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
+
 
   // Get current location using browser geolocation
   const getCurrentLocation = () => {
@@ -144,6 +154,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
       alert('❌ Geolocation is not supported by your browser.');
     }
   };
+
 
   // Improved search using Nominatim API directly
   const handleSearch = async () => {
@@ -185,6 +196,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
     }
   };
 
+
   // Handle search result selection
   const selectSearchResult = (result) => {
     const lat = parseFloat(result.lat);
@@ -203,6 +215,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
     setSearchResults([]);
     setSearchQuery('');
   };
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -230,7 +243,9 @@ export default function EmergencyForm({ onEmergencyCreated }) {
       }
     };
 
+
     console.log('📤 Submitting emergency:', emergencyData);
+
 
     submitEmergency(emergencyData, {
       onSuccess: (data) => {
@@ -252,6 +267,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
       }
     });
   };
+
 
   // Auto-fill with test data
   const fillTestData = () => {
@@ -276,15 +292,16 @@ export default function EmergencyForm({ onEmergencyCreated }) {
     setShowMap(true);
   };
 
+
   // Age range options
   const ageRanges = [
-    '0-5', '5-10', '10-15', '15-20', '20-25', '25-30', '30-35', '35-40',
-    '40-45', '45-50', '50-55', '55-60', '60-65', '65-70', '70-75', '75-80',
-    '80-85', '85-90', '90-95', '95-100', '100+'
+    '0-3', '3-10', '10-20', '20-40', '40-60', '60-80', '80+'
   ];
+
 
   // Gender options
   const genderOptions = ['Male', 'Female', 'Others'];
+
 
   return (
     <div style={styles.container}>
@@ -294,6 +311,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
           Fill Test Data
         </button>
       </div>
+
 
       <form onSubmit={handleSubmit} style={styles.form}>
         {/* Patient Info */}
@@ -312,6 +330,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
               required
             />
           </div>
+
 
           <div style={styles.row}>
             <div style={styles.formGroup}>
@@ -332,6 +351,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
               </select>
             </div>
 
+
             <div style={styles.formGroup}>
               <label style={styles.label}>Gender</label>
               <select
@@ -351,6 +371,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
             </div>
           </div>
 
+
           <div style={styles.formGroup}>
             <label style={styles.label}>Contact Number</label>
             <input
@@ -364,6 +385,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
             />
           </div>
         </div>
+
 
         {/* Vitals */}
         <div style={styles.section}>
@@ -381,6 +403,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
             />
           </div>
 
+
           <div style={styles.row}>
             <div style={styles.formGroup}>
               <label style={styles.label}>Heart Rate (bpm)</label>
@@ -395,6 +418,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
                 max="200"
               />
             </div>
+
 
             <div style={styles.formGroup}>
               <label style={styles.label}>Oxygen Level (%)</label>
@@ -411,6 +435,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
             </div>
           </div>
         </div>
+
 
         {/* Symptoms */}
         <div style={styles.section}>
@@ -430,6 +455,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
             />
           </div>
         </div>
+
 
         {/* Location Section */}
         <div style={styles.section}>
@@ -452,6 +478,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
               🗺️ {showMap ? 'Hide Map' : 'Select on Map'}
             </button>
           </div>
+
 
           {/* Search Location */}
           <div style={styles.formGroup}>
@@ -478,6 +505,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
               </button>
             </div>
 
+
             {/* Search Results Dropdown */}
             {searchResults.length > 0 && (
               <div style={styles.searchResults}>
@@ -495,6 +523,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
             )}
           </div>
 
+
           {/* Selected Location Display */}
           {formData.address && (
             <div style={styles.locationDisplay}>
@@ -505,6 +534,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
               </div>
             </div>
           )}
+
 
           {/* OpenStreetMap Display */}
           {showMap && (
@@ -533,6 +563,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
           )}
         </div>
 
+
         {/* Status Display - NEW */}
         {isSubmitting && (
           <div style={styles.statusBox}>
@@ -540,6 +571,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
             <div style={styles.statusText}>Submitting emergency request...</div>
           </div>
         )}
+
 
         {isPolling && statusData && (
           <div style={styles.statusBox}>
@@ -560,6 +592,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
           </div>
         )}
 
+
         {/* Error Display */}
         {submitError && (
           <div style={styles.error}>
@@ -567,11 +600,13 @@ export default function EmergencyForm({ onEmergencyCreated }) {
           </div>
         )}
 
+
         {pollingError && (
           <div style={{...styles.error, backgroundColor: '#ff9800'}}>
             ⚠️ Status Check Error: {pollingError.message}
           </div>
         )}
+
 
         {/* Submit Button */}
         <button 
@@ -591,6 +626,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
     </div>
   );
 }
+
 
 const styles = {
   container: {
@@ -627,29 +663,34 @@ const styles = {
   },
   section: {
     backgroundColor: '#2a2a2a',
-    padding: '15px',
+    padding: '20px',
     borderRadius: '8px'
   },
   sectionTitle: {
     color: '#4CAF50',
     marginTop: 0,
-    marginBottom: '15px',
-    fontSize: '18px'
+    marginBottom: '20px',
+    fontSize: '18px',
+    textAlign: 'center'
   },
   formGroup: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '5px',
-    flex: 1
+    gap: '8px',
+    flex: 1,
+    marginBottom: '15px'
   },
   row: {
     display: 'flex',
-    gap: '15px'
+    gap: '15px',
+    marginBottom: '15px'
   },
   label: {
     color: '#ccc',
     fontSize: '14px',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    textAlign: 'left',
+    marginBottom: '5px'
   },
   required: {
     color: '#ff4444',
