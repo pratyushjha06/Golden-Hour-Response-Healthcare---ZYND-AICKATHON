@@ -83,6 +83,63 @@ export default function EmergencyForm({ onEmergencyCreated }) {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
 
+  // Symptoms autocomplete state
+  const [symptomInput, setSymptomInput] = useState('');
+  const [selectedSymptoms, setSelectedSymptoms] = useState([]);
+  const [symptomSuggestions, setSuggestionSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+
+  // Comprehensive symptoms database
+  const symptomsDatabase = [
+    // A
+    'Abdominal pain', 'Abdominal swelling', 'Acid reflux', 'Acne', 'Agitation', 'Allergic reaction', 'Ankle swelling', 'Anxiety', 'Arm pain', 'Arm weakness',
+    // B
+    'Back pain', 'Bleeding', 'Blisters', 'Bloating', 'Blood in stool', 'Blood in urine', 'Blurred vision', 'Body aches', 'Bone pain', 'Breast lump', 'Breathing difficulty', 'Bruising', 'Burning sensation',
+    // C
+    'Chest pain', 'Chest tightness', 'Chills', 'Chronic fatigue', 'Cold hands and feet', 'Cold sweats', 'Confusion', 'Congestion', 'Constipation', 'Cough', 'Coughing up blood', 'Cramps', 'Crying spells',
+    // D
+    'Decreased appetite', 'Dehydration', 'Depression', 'Diarrhea', 'Difficulty concentrating', 'Difficulty sleeping', 'Difficulty swallowing', 'Discharge', 'Dizziness', 'Double vision', 'Drowsiness', 'Dry mouth', 'Dry skin',
+    // E
+    'Ear pain', 'Ear ringing', 'Excessive sweating', 'Excessive thirst', 'Eye pain', 'Eye redness', 'Eye swelling',
+    // F
+    'Facial pain', 'Facial swelling', 'Fainting', 'Fatigue', 'Fever', 'Fluid retention', 'Flushing', 'Foot pain', 'Forgetfulness', 'Frequent urination',
+    // G
+    'Gas', 'Groin pain', 'Gum bleeding',
+    // H
+    'Hair loss', 'Hallucinations', 'Hand numbness', 'Hand tremors', 'Headache', 'Hearing loss', 'Heart palpitations', 'Heartburn', 'Heavy menstrual bleeding', 'High blood pressure', 'Hiccups', 'Hip pain', 'Hives', 'Hoarseness', 'Hot flashes',
+    // I
+    'Increased appetite', 'Indigestion', 'Insomnia', 'Irregular heartbeat', 'Irritability', 'Itching', 'Itchy eyes',
+    // J
+    'Jaundice', 'Jaw pain', 'Joint pain', 'Joint stiffness', 'Joint swelling',
+    // K
+    'Kidney pain', 'Knee pain',
+    // L
+    'Lack of coordination', 'Leg cramps', 'Leg pain', 'Leg swelling', 'Leg weakness', 'Lightheadedness', 'Loss of appetite', 'Loss of balance', 'Loss of consciousness', 'Low blood pressure', 'Lower back pain', 'Lump in throat',
+    // M
+    'Memory loss', 'Menstrual cramps', 'Mood swings', 'Mouth sores', 'Muscle aches', 'Muscle cramps', 'Muscle spasms', 'Muscle stiffness', 'Muscle weakness',
+    // N
+    'Nasal congestion', 'Nausea', 'Neck pain', 'Neck stiffness', 'Nervousness', 'Night sweats', 'Nosebleed', 'Numbness',
+    // O
+    'Obesity',
+    // P
+    'Painful urination', 'Pale skin', 'Pelvic pain', 'Pins and needles', 'Poor appetite',
+    // R
+    'Rapid breathing', 'Rapid heartbeat', 'Rash', 'Rectal bleeding', 'Redness', 'Restlessness', 'Runny nose',
+    // S
+    'Sadness', 'Scalp itching', 'Seizures', 'Sensitivity to light', 'Severe headache', 'Shaking', 'Shortness of breath', 'Shoulder pain', 'Skin discoloration', 'Skin dryness', 'Skin rash', 'Sleep disturbances', 'Slurred speech', 'Sneezing', 'Sore throat', 'Stomach cramps', 'Stomach pain', 'Stuffy nose', 'Sudden weight gain', 'Sudden weight loss', 'Sweating', 'Swelling', 'Swollen glands', 'Swollen lymph nodes',
+    // T
+    'Thirst', 'Throat irritation', 'Tingling', 'Tinnitus', 'Tiredness', 'Toothache', 'Tremors',
+    // U
+    'Unintentional weight loss', 'Unusual bleeding', 'Upper abdominal pain', 'Upset stomach', 'Urinary incontinence', 'Urinary urgency',
+    // V
+    'Vaginal bleeding', 'Vaginal discharge', 'Vertigo', 'Vision changes', 'Vision loss', 'Vomiting', 'Vomiting blood',
+    // W
+    'Watery eyes', 'Weakness', 'Weight gain', 'Weight loss', 'Wheezing',
+    // Y
+    'Yellowing of skin'
+  ];
+
 
   // Hook for submitting emergency
   const { mutate: submitEmergency, isPending: isSubmitting, error: submitError } = useTriageEmergency();
@@ -115,6 +172,68 @@ export default function EmergencyForm({ onEmergencyCreated }) {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
+    });
+  };
+
+
+  // Handle symptom input change with autocomplete
+  const handleSymptomInputChange = (e) => {
+    const value = e.target.value;
+    setSymptomInput(value);
+
+    if (value.trim().length > 0) {
+      // Filter symptoms based on input
+      const filtered = symptomsDatabase.filter(symptom =>
+        symptom.toLowerCase().startsWith(value.toLowerCase())
+      );
+      setSuggestionSuggestions(filtered);
+      setShowSuggestions(true);
+    } else {
+      setSuggestionSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+
+  // Add symptom from suggestion
+  const addSymptom = (symptom) => {
+    if (!selectedSymptoms.includes(symptom)) {
+      const newSymptoms = [...selectedSymptoms, symptom];
+      setSelectedSymptoms(newSymptoms);
+      updateFormDataSymptoms(newSymptoms);
+    }
+    setSymptomInput('');
+    setSuggestionSuggestions([]);
+    setShowSuggestions(false);
+  };
+
+
+  // Add "Others" option
+  const addOtherSymptom = () => {
+    if (symptomInput.trim() && !selectedSymptoms.includes(symptomInput.trim())) {
+      const newSymptoms = [...selectedSymptoms, symptomInput.trim()];
+      setSelectedSymptoms(newSymptoms);
+      updateFormDataSymptoms(newSymptoms);
+    }
+    setSymptomInput('');
+    setSuggestionSuggestions([]);
+    setShowSuggestions(false);
+  };
+
+
+  // Remove symptom
+  const removeSymptom = (symptom) => {
+    const newSymptoms = selectedSymptoms.filter(s => s !== symptom);
+    setSelectedSymptoms(newSymptoms);
+    updateFormDataSymptoms(newSymptoms);
+  };
+
+
+  // Update formData symptoms
+  const updateFormDataSymptoms = (symptoms) => {
+    setFormData({
+      ...formData,
+      symptoms: symptoms.join(', ')
     });
   };
 
@@ -226,6 +345,12 @@ export default function EmergencyForm({ onEmergencyCreated }) {
       return;
     }
     
+    // Validate symptoms
+    if (selectedSymptoms.length === 0) {
+      alert('❌ Please add at least one symptom');
+      return;
+    }
+    
     const emergencyData = {
       patientName: formData.patientName,
       age: formData.age,
@@ -282,11 +407,13 @@ export default function EmergencyForm({ onEmergencyCreated }) {
       bloodPressure: '140/90',
       heartRate: '95',
       oxygenLevel: '92',
-      symptoms: 'Severe chest pain, shortness of breath, sweating',
+      symptoms: 'Chest pain, Shortness of breath, Sweating',
       latitude: testLat.toString(),
       longitude: testLng.toString(),
       address: 'New Delhi, India'
     });
+    
+    setSelectedSymptoms(['Chest pain', 'Shortness of breath', 'Sweating']);
     setMapCenter([testLat, testLng]);
     setMarkerPosition({ lat: testLat, lng: testLng });
     setShowMap(true);
@@ -295,7 +422,9 @@ export default function EmergencyForm({ onEmergencyCreated }) {
 
   // Age range options
   const ageRanges = [
-    '0-3', '3-10', '10-20', '20-40', '40-60', '60-80', '80+'
+    '0-5', '5-10', '10-15', '15-20', '20-25', '25-30', '30-35', '35-40',
+    '40-45', '45-50', '50-55', '55-60', '60-65', '65-70', '70-75', '75-80',
+    '80-85', '85-90', '90-95', '95-100', '100+'
   ];
 
 
@@ -437,22 +566,100 @@ export default function EmergencyForm({ onEmergencyCreated }) {
         </div>
 
 
-        {/* Symptoms */}
+        {/* Symptoms - IMPROVED UI */}
         <div style={styles.section}>
           <h3 style={styles.sectionTitle}>Symptoms</h3>
+          
           <div style={styles.formGroup}>
             <label style={styles.label}>
-              Describe Symptoms <span style={styles.required}>*</span>
+              Type Symptoms <span style={styles.required}>*</span>
             </label>
-            <textarea
-              name="symptoms"
-              value={formData.symptoms}
-              onChange={handleChange}
-              required
-              style={styles.textarea}
-              placeholder="Describe all symptoms in detail..."
-              rows="4"
-            />
+            
+            {/* Help Box */}
+            <div style={styles.symptomHelpBox}>
+              <span style={styles.helpIcon}>💡</span>
+              <span>Start typing to see suggestions (e.g., "H" for Headache)</span>
+            </div>
+            
+            {/* Symptom Input with Better Styling */}
+            <div style={styles.symptomInputContainer}>
+              <input
+                type="text"
+                value={symptomInput}
+                onChange={handleSymptomInputChange}
+                onFocus={() => symptomInput && setShowSuggestions(true)}
+                style={styles.symptomInput}
+                placeholder="Type symptom name..."
+              />
+              
+              {/* Suggestions Dropdown */}
+              {showSuggestions && symptomSuggestions.length > 0 && (
+                <div style={styles.suggestionsDropdown}>
+                  <div style={styles.suggestionsHeader}>
+                    💊 Suggested Symptoms
+                  </div>
+                  {symptomSuggestions.slice(0, 10).map((symptom, index) => (
+                    <div
+                      key={index}
+                      style={styles.suggestionItem}
+                      onClick={() => addSymptom(symptom)}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#4a4a4a'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <span style={styles.suggestionIcon}>✓</span>
+                      {symptom}
+                    </div>
+                  ))}
+                  
+                  {/* Others Option */}
+                  {symptomInput.trim() && (
+                    <div
+                      style={styles.othersOption}
+                      onClick={addOtherSymptom}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a5a2a'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2a4a2a'}
+                    >
+                      <span style={styles.othersIcon}>➕</span>
+                      Add "{symptomInput}" (Others)
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+
+            {/* Selected Symptoms Tags */}
+            {selectedSymptoms.length > 0 && (
+              <div style={styles.selectedSymptomsContainer}>
+                <div style={styles.selectedSymptomsHeader}>
+                  <span style={styles.selectedIcon}>✅</span>
+                  <span>Selected Symptoms ({selectedSymptoms.length})</span>
+                </div>
+                <div style={styles.symptomsTagsContainer}>
+                  {selectedSymptoms.map((symptom, index) => (
+                    <div key={index} style={styles.symptomTag}>
+                      <span style={styles.symptomTagText}>{symptom}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeSymptom(symptom)}
+                        style={styles.removeSymptomBtn}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Validation Message */}
+            {selectedSymptoms.length === 0 && (
+              <div style={styles.validationHint}>
+                ⚠️ Please add at least one symptom to continue
+              </div>
+            )}
           </div>
         </div>
 
@@ -564,7 +771,7 @@ export default function EmergencyForm({ onEmergencyCreated }) {
         </div>
 
 
-        {/* Status Display - NEW */}
+        {/* Status Display */}
         {isSubmitting && (
           <div style={styles.statusBox}>
             <div style={styles.statusIcon}>📤</div>
@@ -723,6 +930,164 @@ const styles = {
     resize: 'vertical',
     fontFamily: 'Arial'
   },
+  
+  // IMPROVED SYMPTOM AUTOCOMPLETE STYLES
+  symptomHelpBox: {
+    backgroundColor: '#1e3a1e',
+    color: '#81C784',
+    padding: '12px 15px',
+    borderRadius: '8px',
+    fontSize: '13px',
+    marginBottom: '12px',
+    border: '2px solid #4CAF50',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    boxShadow: '0 2px 4px rgba(76, 175, 80, 0.2)'
+  },
+  helpIcon: {
+    fontSize: '18px'
+  },
+  symptomInputContainer: {
+    position: 'relative',
+    width: '100%'
+  },
+  symptomInput: {
+    width: '100%',
+    padding: '14px 16px',
+    borderRadius: '8px',
+    border: '2px solid #4CAF50',
+    backgroundColor: '#333',
+    color: 'white',
+    fontSize: '15px',
+    transition: 'all 0.3s',
+    outline: 'none',
+    boxSizing: 'border-box'
+  },
+  suggestionsDropdown: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: '#2a2a2a',
+    border: '2px solid #4CAF50',
+    borderRadius: '8px',
+    marginTop: '8px',
+    maxHeight: '300px',
+    overflowY: 'auto',
+    zIndex: 1000,
+    boxShadow: '0 6px 12px rgba(0,0,0,0.4)'
+  },
+  suggestionsHeader: {
+    padding: '12px 16px',
+    backgroundColor: '#1e3a1e',
+    color: '#4CAF50',
+    fontWeight: 'bold',
+    fontSize: '14px',
+    borderBottom: '2px solid #4CAF50',
+    position: 'sticky',
+    top: 0,
+    zIndex: 1
+  },
+  suggestionItem: {
+    padding: '14px 16px',
+    cursor: 'pointer',
+    color: 'white',
+    borderBottom: '1px solid #3a3a3a',
+    transition: 'all 0.2s',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    fontSize: '14px'
+  },
+  suggestionIcon: {
+    color: '#4CAF50',
+    fontSize: '16px',
+    fontWeight: 'bold'
+  },
+  othersOption: {
+    backgroundColor: '#2a4a2a',
+    color: '#81C784',
+    fontWeight: 'bold',
+    borderTop: '2px solid #4CAF50',
+    padding: '14px 16px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    fontSize: '14px',
+    position: 'sticky',
+    bottom: 0
+  },
+  othersIcon: {
+    fontSize: '16px',
+    fontWeight: 'bold'
+  },
+  selectedSymptomsContainer: {
+    marginTop: '20px',
+    backgroundColor: '#1a2a1a',
+    padding: '15px',
+    borderRadius: '8px',
+    border: '2px solid #040f05ff'
+  },
+  selectedSymptomsHeader: {
+    color: '#5b952eff',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    marginBottom: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px'
+  },
+  selectedIcon: {
+    fontSize: '16px'
+  },
+  symptomsTagsContainer: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '10px'
+  },
+  symptomTag: {
+    backgroundColor: '#2a4a2a',
+    color: '#fff',
+    padding: '10px 16px',
+    borderRadius: '25px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    border: '2px solid #4CAF50',
+    fontSize: '14px',
+    transition: 'all 0.2s',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+  },
+  symptomTagText: {
+    fontWeight: '500'
+  },
+  removeSymptomBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#ff4444',
+    cursor: 'pointer',
+    fontSize: '18px',
+    padding: '0 4px',
+    fontWeight: 'bold',
+    transition: 'all 0.2s',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  validationHint: {
+    marginTop: '10px',
+    padding: '10px 12px',
+    backgroundColor: '#3a2a1a',
+    color: '#FFA726',
+    borderRadius: '6px',
+    fontSize: '13px',
+    border: '1px solid #FF9800',
+    textAlign: 'center'
+  },
+
   locationButtons: {
     display: 'flex',
     gap: '10px',
