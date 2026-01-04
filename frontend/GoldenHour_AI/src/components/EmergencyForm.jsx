@@ -885,3 +885,411 @@ const [isLocating, setIsLocating] = useState(false);
   );
 }
 
+
+const styles = {
+  container: {
+    backgroundColor: '#1a1a1a',
+    padding: '20px',
+    borderRadius: '10px',
+    maxWidth: '800px',
+    margin: '0 auto'
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px'
+  },
+  title: {
+    color: '#ff4444',
+    margin: 0,
+    fontSize: '24px'
+  },
+  testButton: {
+    backgroundColor: '#555',
+    color: 'white',
+    border: 'none',
+    padding: '8px 16px',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '14px'
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px'
+  },
+  section: {
+    backgroundColor: '#2a2a2a',
+    padding: '20px',
+    borderRadius: '8px'
+  },
+  sectionTitle: {
+    color: '#4CAF50',
+    marginTop: 0,
+    marginBottom: '20px',
+    fontSize: '18px',
+    textAlign: 'center'
+  },
+  formGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    flex: 1,
+    marginBottom: '15px'
+  },
+  row: {
+    display: 'flex',
+    gap: '15px',
+    marginBottom: '15px'
+  },
+  label: {
+    color: '#ccc',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    textAlign: 'left',
+    marginBottom: '5px'
+  },
+  required: {
+    color: '#ff4444',
+    marginLeft: '3px'
+  },
+  input: {
+    padding: '10px',
+    borderRadius: '5px',
+    border: '1px solid #444',
+    backgroundColor: '#333',
+    color: 'white',
+    fontSize: '14px'
+  },
+  select: {
+    padding: '10px',
+    borderRadius: '5px',
+    border: '1px solid #444',
+    backgroundColor: '#333',
+    color: 'white',
+    fontSize: '14px',
+    cursor: 'pointer'
+  },
+  textarea: {
+    padding: '10px',
+    borderRadius: '5px',
+    border: '1px solid #444',
+    backgroundColor: '#333',
+    color: 'white',
+    fontSize: '14px',
+    resize: 'vertical',
+    fontFamily: 'Arial'
+  },
+  
+  // IMPROVED SYMPTOM AUTOCOMPLETE STYLES
+  symptomHelpBox: {
+    backgroundColor: '#1e3a1e',
+    color: '#81C784',
+    padding: '12px 15px',
+    borderRadius: '8px',
+    fontSize: '13px',
+    marginBottom: '12px',
+    border: '2px solid #4CAF50',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    boxShadow: '0 2px 4px rgba(76, 175, 80, 0.2)'
+  },
+  helpIcon: {
+    fontSize: '18px'
+  },
+  symptomInputContainer: {
+    position: 'relative',
+    width: '100%'
+  },
+  symptomInput: {
+    width: '100%',
+    padding: '14px 16px',
+    borderRadius: '8px',
+    border: '2px solid #4CAF50',
+    backgroundColor: '#333',
+    color: 'white',
+    fontSize: '15px',
+    transition: 'all 0.3s',
+    outline: 'none',
+    boxSizing: 'border-box'
+  },
+  suggestionsDropdown: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: '#2a2a2a',
+    border: '2px solid #4CAF50',
+    borderRadius: '8px',
+    marginTop: '8px',
+    maxHeight: '300px',
+    overflowY: 'auto',
+    zIndex: 1000,
+    boxShadow: '0 6px 12px rgba(0,0,0,0.4)'
+  },
+  suggestionsHeader: {
+    padding: '12px 16px',
+    backgroundColor: '#1e3a1e',
+    color: '#4CAF50',
+    fontWeight: 'bold',
+    fontSize: '14px',
+    borderBottom: '2px solid #4CAF50',
+    position: 'sticky',
+    top: 0,
+    zIndex: 1
+  },
+  suggestionItem: {
+    padding: '14px 16px',
+    cursor: 'pointer',
+    color: 'white',
+    borderBottom: '1px solid #3a3a3a',
+    transition: 'all 0.2s',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    fontSize: '14px'
+  },
+  suggestionIcon: {
+    color: '#4CAF50',
+    fontSize: '16px',
+    fontWeight: 'bold'
+  },
+  othersOption: {
+    backgroundColor: '#2a4a2a',
+    color: '#81C784',
+    fontWeight: 'bold',
+    borderTop: '2px solid #4CAF50',
+    padding: '14px 16px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    fontSize: '14px',
+    position: 'sticky',
+    bottom: 0
+  },
+  othersIcon: {
+    fontSize: '16px',
+    fontWeight: 'bold'
+  },
+  selectedSymptomsContainer: {
+    marginTop: '20px',
+    backgroundColor: '#1a2a1a',
+    padding: '15px',
+    borderRadius: '8px',
+    border: '2px solid #040f05ff'
+  },
+  selectedSymptomsHeader: {
+    color: '#5b952eff',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    marginBottom: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px'
+  },
+  selectedIcon: {
+    fontSize: '16px'
+  },
+  symptomsTagsContainer: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '10px'
+  },
+  symptomTag: {
+    backgroundColor: '#2a4a2a',
+    color: '#fff',
+    padding: '10px 16px',
+    borderRadius: '25px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    border: '2px solid #4CAF50',
+    fontSize: '14px',
+    transition: 'all 0.2s',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+  },
+  symptomTagText: {
+    fontWeight: '500'
+  },
+  removeSymptomBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#ff4444',
+    cursor: 'pointer',
+    fontSize: '18px',
+    padding: '0 4px',
+    fontWeight: 'bold',
+    transition: 'all 0.2s',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  validationHint: {
+    marginTop: '10px',
+    padding: '10px 12px',
+    backgroundColor: '#3a2a1a',
+    color: '#FFA726',
+    borderRadius: '6px',
+    fontSize: '13px',
+    border: '1px solid #FF9800',
+    textAlign: 'center'
+  },
+
+  locationButtons: {
+    display: 'flex',
+    gap: '10px',
+    marginBottom: '15px'
+  },
+  locationButton: {
+    backgroundColor: '#4CAF50',
+    color: 'white',
+    border: 'none',
+    padding: '10px 15px',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    flex: 1,
+    fontWeight: 'bold',
+    transition: 'all 0.3s'
+  },
+  searchHelp: {
+    backgroundColor: '#1a2a3a',
+    color: '#64B5F6',
+    padding: '8px',
+    borderRadius: '5px',
+    fontSize: '12px',
+    marginBottom: '8px',
+    border: '1px solid #2196F3'
+  },
+  searchContainer: {
+    display: 'flex',
+    gap: '10px'
+  },
+  searchInput: {
+    flex: 1,
+    padding: '10px',
+    borderRadius: '5px',
+    border: '1px solid #444',
+    backgroundColor: '#333',
+    color: 'white',
+    fontSize: '14px'
+  },
+  searchButton: {
+    backgroundColor: '#2196F3',
+    color: 'white',
+    border: 'none',
+    padding: '10px 20px',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '16px',
+    fontWeight: 'bold'
+  },
+  searchResults: {
+    backgroundColor: '#333',
+    border: '1px solid #444',
+    borderRadius: '5px',
+    marginTop: '5px',
+    maxHeight: '300px',
+    overflowY: 'auto'
+  },
+  searchResultItem: {
+    padding: '12px',
+    cursor: 'pointer',
+    color: 'white',
+    borderBottom: '1px solid #444',
+    transition: 'background-color 0.2s'
+  },
+  resultTitle: {
+    fontWeight: 'bold',
+    marginBottom: '4px',
+    color: '#4CAF50'
+  },
+  resultSubtitle: {
+    fontSize: '12px',
+    color: '#aaa'
+  },
+  locationDisplay: {
+    backgroundColor: '#1e3a1e',
+    padding: '12px',
+    borderRadius: '8px',
+    marginTop: '15px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    border: '2px solid #4CAF50'
+  },
+  locationIcon: {
+    fontSize: '24px'
+  },
+  locationLabel: {
+    color: '#4CAF50',
+    fontSize: '12px',
+    fontWeight: 'bold',
+    marginBottom: '3px'
+  },
+  locationText: {
+    color: '#fff',
+    fontSize: '14px'
+  },
+  mapContainer: {
+    marginTop: '15px',
+    borderRadius: '8px',
+    overflow: 'hidden',
+    border: '2px solid #444'
+  },
+  mapInstructions: {
+    backgroundColor: '#2196F3',
+    color: 'white',
+    padding: '8px',
+    textAlign: 'center',
+    fontSize: '13px',
+    fontWeight: 'bold'
+  },
+  statusBox: {
+    backgroundColor: '#1e3a5a',
+    border: '2px solid #2196F3',
+    borderRadius: '8px',
+    padding: '15px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '15px',
+    animation: 'pulse 2s infinite'
+  },
+  statusIcon: {
+    fontSize: '24px'
+  },
+  statusText: {
+    color: '#64B5F6',
+    fontSize: '16px',
+    fontWeight: 'bold',
+    marginBottom: '5px'
+  },
+  statusDetail: {
+    color: '#aaa',
+    fontSize: '13px',
+    marginTop: '3px'
+  },
+  error: {
+    backgroundColor: '#ff4444',
+    color: 'white',
+    padding: '12px',
+    borderRadius: '5px',
+    textAlign: 'center',
+    fontWeight: 'bold'
+  },
+  submitButton: {
+    backgroundColor: '#ff4444',
+    color: 'white',
+    border: 'none',
+    padding: '15px',
+    borderRadius: '8px',
+    fontSize: '18px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    transition: 'all 0.3s'
+  }
+};
