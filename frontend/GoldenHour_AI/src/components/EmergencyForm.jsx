@@ -763,6 +763,77 @@ const timeoutId = setTimeout(() => {
               💡 Try: "Greater Noida", "Noida Sector 62", "Delhi AIIMS"
             </div>
             <div style={styles.searchContainer}>
+               <input
+  type="text"
+  value={searchQuery}
+  onChange={(e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    if (query.trim()) {
+      debouncedSearch(query); // calls Nominatim API
+      setShowSuggestions(true); // show dropdown immediately
+    } else {
+      setSearchResults([]);
+      setShowSuggestions(false);
+    }
+  }}
+/>
+
+
+{showSuggestions && searchResults.length > 0 && (
+  <div className="autocomplete-dropdown">
+    {searchResults.map((res, idx) => (
+      <div key={idx} onClick={() => selectSearchResult(res)}>
+        {res.display_name}
+      </div>
+    ))}
+  </div>
+)}
+
+              <button
+                type="button"
+                onClick={handleSearch}
+                disabled={isSearching}
+                style={styles.searchButton}
+              >
+                {isSearching ? '⏳' : '🔍'}
+              </button>
+            </div>
+
+
+            {searchResults.length > 0 && (
+  <div style={styles.searchResults}>
+    {searchResults.map((result, index) => (
+      <div
+        key={index}
+        style={styles.searchResultItem}
+        onClick={() => {
+          const lat = parseFloat(result.lat);
+          const lng = parseFloat(result.lon);
+
+          // Update form & map instantly
+          setFormData({
+            ...formData,
+            latitude: lat.toString(),
+            longitude: lng.toString(),
+            address: result.display_name
+          });
+
+          setMapCenter([lat, lng]);
+          setMarkerPosition({ lat, lng });
+
+          // Clear search results & query
+          setSearchResults([]);
+          setSearchQuery('');
+          setShowMap(true);
+        }}
+      >
+        <div style={styles.resultTitle}>📍 {result.display_name.split(',')[0]}</div>
+        <div style={styles.resultSubtitle}>{result.display_name}</div>
+      </div>
+    ))}
+  </div>
+)}
              
 
 
