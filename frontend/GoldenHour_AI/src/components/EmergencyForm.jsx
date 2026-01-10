@@ -79,7 +79,9 @@ export default function EmergencyForm({ onEmergencyCreated }) {
 
 
   const [showMap, setShowMap] = useState(false);
-  const [mapCenter, setMapCenter] = useState([28.7041, 77.1025]); // Default: Delhi
+  const DEFAULT_LOCATION = [28.5708, 77.3260]; // Sector 18, Noida
+  const [mapCenter, setMapCenter] = useState(DEFAULT_LOCATION);
+
   const [markerPosition, setMarkerPosition] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -254,43 +256,54 @@ export default function EmergencyForm({ onEmergencyCreated }) {
     setLocationAccuracy(null);
 
     const watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        const { latitude, longitude, accuracy } = position.coords;
+  (position) => {
+    const { latitude, longitude, accuracy } = position.coords;
 
-        // Save accuracy
-        setLocationAccuracy(Math.round(accuracy));
+    setLocationAccuracy(Math.round(accuracy));
 
-        // ❌ Ignore bad readings
-        if (accuracy > 100) return;
+    // Ignore bad readings
+    if (accuracy > 500) return;
 
-        // ✅ Accept good location
-        setFormData(prev => ({
-          ...prev,
-          latitude: latitude.toString(),
-          longitude: longitude.toString(),
-          address: 'Current Location'
-        }));
+    // Accept good location
+    setFormData(prev => ({
+      ...prev,
+      latitude: latitude.toString(),
+      longitude: longitude.toString(),
+      address: 'Current Location'
+    }));
 
-        setMapCenter([latitude, longitude]);
-        setMarkerPosition({ lat: latitude, lng: longitude });
-        setShowMap(true);
+    setMapCenter([latitude, longitude]);
+    setMarkerPosition({ lat: latitude, lng: longitude });
+    setShowMap(true);
 
-        navigator.geolocation.clearWatch(watchId);
-        setIsLocating(false);
+    navigator.geolocation.clearWatch(watchId);
+    clearTimeout(timeoutId);
+    setIsLocating(false);
 
-        alert(`📍 Location locked (±${Math.round(accuracy)}m)`);
-      },
-      (error) => {
-        console.error(error);
-        setIsLocating(false);
-        alert('❌ Location access denied or unavailable');
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 20000,
-        maximumAge: 0
-      }
-    );
+    alert(`📍 Location locked (±${Math.round(accuracy)}m)`);
+  },
+  (error) => {
+    console.error(error);
+    navigator.geolocation.clearWatch(watchId);
+    clearTimeout(timeoutId); 
+    setIsLocating(false);
+    alert('❌ Location access denied or unavailable');
+  },
+  {
+    enableHighAccuracy: true,
+    timeout: 20000,
+    maximumAge: 0
+  }
+);
+
+
+const timeoutId = setTimeout(() => {
+  navigator.geolocation.clearWatch(watchId);
+  setIsLocating(false);
+  alert('⚠️ Unable to get accurate location. Please select manually.');
+}, 25000);
+
+
   };
 
 
@@ -416,8 +429,8 @@ export default function EmergencyForm({ onEmergencyCreated }) {
 
   // Auto-fill with test data
   const fillTestData = () => {
-    const testLat = 28.7041;
-    const testLng = 77.1025;
+    const testLat = 28.5708;
+    const testLng = 77.3260;
 
     setFormData({
       patientName: 'Rajesh Kumar',
