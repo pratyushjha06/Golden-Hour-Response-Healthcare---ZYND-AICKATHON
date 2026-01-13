@@ -1,73 +1,84 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 // Fix default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconRetinaUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
 // Custom icons
 const emergencyIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconUrl:
+    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
-  shadowSize: [41, 41]
+  shadowSize: [41, 41],
 });
 
 const hospitalIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconUrl:
+    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
-  shadowSize: [41, 41]
+  shadowSize: [41, 41],
 });
 
 const ambulanceIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconUrl:
+    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
-  shadowSize: [41, 41]
+  shadowSize: [41, 41],
 });
 
-function AmbulanceTracker({ 
-  emergencyLocation, 
-  hospitalLocation, 
-  ambulanceStartLocation, 
+function AmbulanceTracker({
+  emergencyLocation,
+  ambulanceStartLocation,
   needsAmbulance,
-  onAmbulanceArrival 
+  onAmbulanceArrival,
 }) {
   const map = useMap();
   const [currentPosition, setCurrentPosition] = useState(ambulanceStartLocation);
   const [arrived, setArrived] = useState(false);
-  const animationRef = useRef(null);
-  const hasStartedRef = useRef(false);
 
   useEffect(() => {
-    // Only run animation once
-    if (!needsAmbulance || hasStartedRef.current || arrived) return;
-
-    hasStartedRef.current = true;
-    console.log('🚑 Starting ambulance animation...');
+    if (!needsAmbulance) return;
+    if (!ambulanceStartLocation || !emergencyLocation) return;
 
     const startLat = ambulanceStartLocation.lat;
     const startLng = ambulanceStartLocation.lng;
     const endLat = emergencyLocation.lat;
     const endLng = emergencyLocation.lng;
 
+    if (
+      [startLat, startLng, endLat, endLng].some(
+        (v) => typeof v !== 'number' || isNaN(v),
+      )
+    ) {
+      return;
+    }
+
     const steps = 100;
     let currentStep = 0;
 
-    animationRef.current = setInterval(() => {
+    const interval = setInterval(() => {
       currentStep++;
       const progress = currentStep / steps;
 
@@ -75,135 +86,115 @@ function AmbulanceTracker({
       const newLng = startLng + (endLng - startLng) * progress;
 
       setCurrentPosition({ lat: newLat, lng: newLng });
-      
-      // Only move map view every 10 steps to reduce jumpiness
-      if (currentStep % 10 === 0) {
-        map.setView([newLat, newLng], 13, { animate: true });
-      }
+      map.setView([newLat, newLng], 13);
 
       if (currentStep >= steps) {
-        console.log('🚑 Ambulance arrived!');
-        clearInterval(animationRef.current);
+        clearInterval(interval);
         setArrived(true);
-        setCurrentPosition(emergencyLocation); // Ensure it stops exactly at emergency
         if (onAmbulanceArrival) {
           onAmbulanceArrival();
         }
       }
-    }, 100); // 100ms per step = 10 seconds total
+    }, 100);
 
-    return () => {
-      if (animationRef.current) {
-        clearInterval(animationRef.current);
-      }
-    };
-  }, []); // Empty dependency array - only run once!
+    return () => clearInterval(interval);
+  }, [ambulanceStartLocation, emergencyLocation, needsAmbulance, map, onAmbulanceArrival]);
 
-  if (!needsAmbulance) return null;
+  if (!needsAmbulance || !currentPosition) return null;
 
   return (
     <Marker position={[currentPosition.lat, currentPosition.lng]} icon={ambulanceIcon}>
-      <Popup>
-        <strong>🚑 Ambulance</strong><br />
-        {arrived ? '✅ Arrived at Emergency!' : '🚦 En Route...'}
-      </Popup>
+      <Popup>🚑 Ambulance {arrived ? '(Arrived!)' : '(En Route)'}</Popup>
     </Marker>
   );
 }
 
-export default function AmbulanceMap({ 
-  emergencyLocation, 
-  hospitalLocation, 
-  ambulanceStartLocation, 
+export default function AmbulanceMap({
+  emergencyLocation,
+  hospitalLocation,
+  ambulanceStartLocation,
   needsAmbulance,
-  onAmbulanceArrival 
+  onAmbulanceArrival,
 }) {
-  // Validate coordinates
-  const isValidCoord = (coord) => {
-    return coord && 
-           typeof coord.lat === 'number' && 
-           typeof coord.lng === 'number' &&
-           !isNaN(coord.lat) && 
-           !isNaN(coord.lng) &&
-           coord.lat !== 0 &&
-           coord.lng !== 0;
+  // Normalize coordinates (accept lat/lng or latitude/longitude, strings or numbers)
+  const normalizeCoord = (coord) => {
+    if (!coord) return null;
+    const latRaw = coord.lat ?? coord.latitude;
+    const lngRaw = coord.lng ?? coord.longitude;
+
+    const lat = typeof latRaw === 'string' ? parseFloat(latRaw) : latRaw;
+    const lng = typeof lngRaw === 'string' ? parseFloat(lngRaw) : lngRaw;
+
+    if (typeof lat !== 'number' || typeof lng !== 'number') return null;
+    if (isNaN(lat) || isNaN(lng)) return null;
+
+    return { lat, lng, name: coord.name };
   };
 
-  // Debug logs
+  const normalizedEmergency = normalizeCoord(emergencyLocation);
+  const normalizedHospital = normalizeCoord(hospitalLocation);
+  const normalizedAmbulance = normalizeCoord(ambulanceStartLocation);
+
+  const hasCoords = (coord) =>
+    coord && typeof coord.lat === 'number' && typeof coord.lng === 'number';
+
+  // Debug logs to see exactly what arrives
   console.log('=== AmbulanceMap Props ===');
-  console.log('emergencyLocation:', emergencyLocation);
-  console.log('hospitalLocation:', hospitalLocation);
-  console.log('ambulanceStartLocation:', ambulanceStartLocation);
+  console.log('raw emergencyLocation:', emergencyLocation);
+  console.log('raw hospitalLocation:', hospitalLocation);
+  console.log('raw ambulanceStartLocation:', ambulanceStartLocation);
+  console.log('normalizedEmergency:', normalizedEmergency);
+  console.log('normalizedHospital:', normalizedHospital);
+  console.log('normalizedAmbulance:', normalizedAmbulance);
   console.log('needsAmbulance:', needsAmbulance);
 
-  // Validate all required coordinates
-  if (!isValidCoord(emergencyLocation)) {
-    return (
-      <div style={styles.error}>
-        ❌ Error: Invalid emergency location coordinates
-        <pre>{JSON.stringify(emergencyLocation, null, 2)}</pre>
-      </div>
-    );
+  // If emergency location is still not usable, just don't render the map (no red error)
+  if (!hasCoords(normalizedEmergency)) {
+    return null;
   }
 
-  if (!isValidCoord(hospitalLocation)) {
-    return (
-      <div style={styles.error}>
-        ❌ Error: Invalid hospital location coordinates
-        <pre>{JSON.stringify(hospitalLocation, null, 2)}</pre>
-      </div>
-    );
+  if (!hasCoords(normalizedHospital)) {
+    return null;
   }
 
-  if (needsAmbulance && !isValidCoord(ambulanceStartLocation)) {
-    return (
-      <div style={styles.error}>
-        ❌ Error: Invalid ambulance location coordinates
-        <pre>{JSON.stringify(ambulanceStartLocation, null, 2)}</pre>
-      </div>
-    );
-  }
-
-  const center = [emergencyLocation.lat, emergencyLocation.lng];
+  const center = [normalizedEmergency.lat, normalizedEmergency.lng];
 
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>🗺️ Live Route Tracking</h2>
-      
+
       <div style={styles.mapWrapper}>
-        <MapContainer
-          center={center}
-          zoom={13}
-          style={styles.map}
-          scrollWheelZoom={true}
-        >
+        <MapContainer center={center} zoom={13} style={styles.map} scrollWheelZoom={true}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          
+
           <Marker position={center} icon={emergencyIcon}>
             <Popup>
-              <strong>🚨 Emergency Location</strong><br />
-              Patient needs immediate help
-            </Popup>
-          </Marker>
-          
-          <Marker 
-            position={[hospitalLocation.lat, hospitalLocation.lng]} 
-            icon={hospitalIcon}
-          >
-            <Popup>
-              <strong>🏥 {hospitalLocation.name || 'Hospital'}</strong><br />
-              Selected destination
+              🚨 Emergency Location
+              <br />
+              Patient location
             </Popup>
           </Marker>
 
-          {needsAmbulance && ambulanceStartLocation && (
+          {hasCoords(normalizedHospital) && (
+            <Marker
+              position={[normalizedHospital.lat, normalizedHospital.lng]}
+              icon={hospitalIcon}
+            >
+              <Popup>
+                🏥 {normalizedHospital.name || hospitalLocation?.name || 'Selected Hospital'}
+                <br />
+                Destination
+              </Popup>
+            </Marker>
+          )}
+
+          {needsAmbulance && hasCoords(normalizedAmbulance) && (
             <AmbulanceTracker
-              emergencyLocation={emergencyLocation}
-              hospitalLocation={hospitalLocation}
-              ambulanceStartLocation={ambulanceStartLocation}
+              emergencyLocation={normalizedEmergency}
+              ambulanceStartLocation={normalizedAmbulance}
               needsAmbulance={needsAmbulance}
               onAmbulanceArrival={onAmbulanceArrival}
             />
@@ -213,16 +204,16 @@ export default function AmbulanceMap({
 
       <div style={styles.legend}>
         <div style={styles.legendItem}>
-          <span style={{...styles.legendDot, backgroundColor: '#ff4444'}}>🔴</span>
+          <span style={{ ...styles.legendDot, backgroundColor: '#ff4444' }}>🔴</span>
           <span>Emergency Location</span>
         </div>
         <div style={styles.legendItem}>
-          <span style={{...styles.legendDot, backgroundColor: '#4CAF50'}}>🟢</span>
+          <span style={{ ...styles.legendDot, backgroundColor: '#4CAF50' }}>🟢</span>
           <span>Hospital</span>
         </div>
         {needsAmbulance && (
           <div style={styles.legendItem}>
-            <span style={{...styles.legendDot, backgroundColor: '#2196F3'}}>🔵</span>
+            <span style={{ ...styles.legendDot, backgroundColor: '#2196F3' }}>🔵</span>
             <span>Ambulance (Moving)</span>
           </div>
         )}
@@ -236,21 +227,21 @@ const styles = {
     backgroundColor: '#1a1a1a',
     padding: '20px',
     borderRadius: '10px',
-    marginTop: '20px'
+    marginTop: '20px',
   },
   title: {
     color: '#4CAF50',
     margin: '0 0 20px 0',
-    textAlign: 'center'
+    textAlign: 'center',
   },
   mapWrapper: {
     borderRadius: '10px',
     overflow: 'hidden',
-    border: '2px solid #333'
+    border: '2px solid #333',
   },
   map: {
     height: '500px',
-    width: '100%'
+    width: '100%',
   },
   legend: {
     display: 'flex',
@@ -259,20 +250,20 @@ const styles = {
     marginTop: '15px',
     padding: '15px',
     backgroundColor: '#2a2a2a',
-    borderRadius: '8px'
+    borderRadius: '8px',
   },
   legendItem: {
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
     color: 'white',
-    fontSize: '14px'
+    fontSize: '14px',
   },
   legendDot: {
     width: '12px',
     height: '12px',
     borderRadius: '50%',
-    display: 'inline-block'
+    display: 'inline-block',
   },
   error: {
     backgroundColor: '#ff4444',
@@ -280,6 +271,6 @@ const styles = {
     padding: '20px',
     borderRadius: '10px',
     marginTop: '20px',
-    fontFamily: 'monospace'
-  }
+    fontFamily: 'monospace',
+  },
 };

@@ -49,7 +49,7 @@ function Dashboard() {
     document.body.style.backgroundColor = '#0f0f0f';
     document.body.style.margin = '0';
     document.body.style.padding = '0';
-    
+
     return () => {
       document.body.style.backgroundColor = '';
       document.body.style.margin = '';
@@ -57,10 +57,30 @@ function Dashboard() {
     };
   }, []);
 
+  // Normalize and store triage data from EmergencyForm
   const handleEmergencyCreated = (id, data) => {
+    const emergencyLocation = {
+      lat:
+        (data.location && data.location.lat) ??
+        data.latitude ??
+        data.lat ??
+        0,
+      lng:
+        (data.location && data.location.lng) ??
+        data.longitude ??
+        data.lng ??
+        0,
+    };
+
+    const normalizedTriageData = {
+      ...data,
+      location: emergencyLocation,
+    };
+
     setEmergencyId(id);
-    setTriageData(data);
-    console.log('✅ Emergency created:', id, data);
+    setTriageData(normalizedTriageData);
+
+    console.log('✅ Emergency created (normalized):', id, normalizedTriageData);
   };
 
   const handleAmbulanceSelection = (needs) => {
@@ -95,17 +115,21 @@ function Dashboard() {
   }
 
   // Check if map should show
-  const shouldShowMap = emergencyId && 
-                        triageData && 
-                        needsAmbulance !== null && 
-                        selectedHospitalData && 
-                        ambulanceData;
+  const shouldShowMap =
+    emergencyId &&
+    triageData &&
+    triageData.location &&
+    typeof triageData.location.lat === 'number' &&
+    typeof triageData.location.lng === 'number' &&
+    needsAmbulance !== null &&
+    selectedHospitalData &&
+    ambulanceData;
 
   console.log('Should show map?', shouldShowMap);
 
   return (
     <div style={styles.dashboard}>
-      <button 
+      <button
         onClick={() => {
           setShowLanding(true);
           setEmergencyId(null);
@@ -125,11 +149,11 @@ function Dashboard() {
 
       {/* Step 1: Emergency Form */}
       <EmergencyForm onEmergencyCreated={handleEmergencyCreated} />
-      
+
       {/* Step 2: Ambulance Selector */}
       {emergencyId && triageData && needsAmbulance === null && (
         <div>
-          <p style={{color: 'yellow', textAlign: 'center'}}>🟡 Step 2: Choose ambulance</p>
+          <p style={{ color: 'yellow', textAlign: 'center' }}>🟡 Step 2: Choose ambulance</p>
           <AmbulanceSelector onSelect={handleAmbulanceSelection} />
         </div>
       )}
@@ -137,38 +161,50 @@ function Dashboard() {
       {/* Step 3: Hospital List */}
       {emergencyId && needsAmbulance !== null && !selectedHospitalData && (
         <div>
-          <p style={{color: 'yellow', textAlign: 'center'}}>🟡 Step 3: Select hospital</p>
-          <HospitalList 
-            emergencyId={emergencyId} 
+          <p style={{ color: 'yellow', textAlign: 'center' }}>🟡 Step 3: Select hospital</p>
+          <HospitalList
+            emergencyId={emergencyId}
             onHospitalSelect={handleHospitalSelection}
           />
         </div>
       )}
 
       {/* Step 4: Loading message while waiting for ambulance data */}
-      {emergencyId && needsAmbulance !== null && selectedHospitalData && !ambulanceData && (
-        <div style={{color: 'yellow', textAlign: 'center', padding: '20px', backgroundColor: '#333', borderRadius: '10px', margin: '20px 0'}}>
-          ⏳ Loading ambulance data...
-        </div>
-      )}
+      {emergencyId &&
+        needsAmbulance !== null &&
+        selectedHospitalData &&
+        !ambulanceData && (
+          <div
+            style={{
+              color: 'yellow',
+              textAlign: 'center',
+              padding: '20px',
+              backgroundColor: '#333',
+              borderRadius: '10px',
+              margin: '20px 0',
+            }}
+          >
+            ⏳ Loading ambulance data...
+          </div>
+        )}
 
       {/* Step 5: Map */}
       {shouldShowMap ? (
         <div>
-          <p style={{color: 'lime', textAlign: 'center'}}>✅ Step 4: Map is showing!</p>
-          <AmbulanceMap 
-            emergencyLocation={{ 
-              lat: triageData.location.lat, 
-              lng: triageData.location.lng 
+          <p style={{ color: 'lime', textAlign: 'center' }}>✅ Step 4: Map is showing!</p>
+          <AmbulanceMap
+            emergencyLocation={{
+              lat: triageData.location.lat,
+              lng: triageData.location.lng,
             }}
-            hospitalLocation={{ 
-              lat: selectedHospitalData.latitude, 
+            hospitalLocation={{
+              lat: selectedHospitalData.latitude,
               lng: selectedHospitalData.longitude,
-              name: selectedHospitalData.name
+              name: selectedHospitalData.name,
             }}
-            ambulanceStartLocation={{ 
-              lat: ambulanceData.currentLat, 
-              lng: ambulanceData.currentLng 
+            ambulanceStartLocation={{
+              lat: ambulanceData.currentLat,
+              lng: ambulanceData.currentLng,
             }}
             needsAmbulance={needsAmbulance}
             onAmbulanceArrival={handleAmbulanceArrival}
@@ -176,21 +212,33 @@ function Dashboard() {
         </div>
       ) : (
         selectedHospitalData && (
-          <div style={{color: 'red', textAlign: 'center', padding: '20px', backgroundColor: '#331111', borderRadius: '10px', margin: '20px 0'}}>
+          <div
+            style={{
+              color: 'red',
+              textAlign: 'center',
+              padding: '20px',
+              backgroundColor: '#331111',
+              borderRadius: '10px',
+              margin: '20px 0',
+            }}
+          >
             ❌ Map not showing. Missing data:
-            <ul style={{listStyle: 'none', padding: 0}}>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
               <li>{emergencyId ? '✅' : '❌'} Emergency ID</li>
               <li>{triageData ? '✅' : '❌'} Triage Data</li>
               <li>{needsAmbulance !== null ? '✅' : '❌'} Ambulance Selection</li>
               <li>{selectedHospitalData ? '✅' : '❌'} Hospital Selected</li>
               <li>{ambulanceData ? '✅' : '❌'} Ambulance Data</li>
+              <li>
+                {triageData && triageData.location ? '✅' : '❌'} Emergency Location
+              </li>
             </ul>
           </div>
         )
       )}
-      
+
       <TriageResults triageData={triageData} />
-      
+
       <AgentStatus emergencyId={emergencyId} />
     </div>
   );
@@ -214,7 +262,7 @@ const styles = {
     position: 'relative',
     margin: '0',
     width: '100%',
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
   },
   backButton: {
     position: 'fixed',
@@ -228,7 +276,7 @@ const styles = {
     cursor: 'pointer',
     fontSize: '14px',
     zIndex: 1001,
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   header: {
     textAlign: 'center',
@@ -236,19 +284,19 @@ const styles = {
     marginTop: '50px',
     padding: '20px',
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    borderRadius: '15px'
+    borderRadius: '15px',
   },
   mainTitle: {
     margin: 0,
     color: 'white',
     fontSize: '36px',
-    textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+    textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
   },
   subtitle: {
     margin: '10px 0 0 0',
     color: '#ddd',
-    fontSize: '18px'
-  }
+    fontSize: '18px',
+  },
 };
 
 export default App;

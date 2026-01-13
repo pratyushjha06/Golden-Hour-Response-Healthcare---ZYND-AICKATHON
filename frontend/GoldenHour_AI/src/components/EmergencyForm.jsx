@@ -328,7 +328,6 @@ export default function EmergencyForm({ onEmergencyCreated }) {
 
   const fetchSearchResults = async (query) => {
     if (!query.trim()) return setSearchResults([]);
-
     setIsSearching(true);
     try {
       const encodedQuery = encodeURIComponent(query);
@@ -387,7 +386,6 @@ export default function EmergencyForm({ onEmergencyCreated }) {
     setSymptomInput(value);
 
     if (value.trim().length > 0) {
-      // Filter symptoms based on input
       const filtered = symptomsDatabase.filter((symptom) =>
         symptom.toLowerCase().startsWith(value.toLowerCase())
       );
@@ -457,7 +455,6 @@ export default function EmergencyForm({ onEmergencyCreated }) {
 
         setLocationAccuracy(Math.round(accuracy));
 
-        // Ignore bad readings
         if (accuracy > 200) return;
 
         setFormData((prev) => ({
@@ -603,14 +600,35 @@ export default function EmergencyForm({ onEmergencyCreated }) {
       onSuccess: (data) => {
         console.log("✅ Emergency submitted successfully:", data);
 
-        // Start polling by setting emergency ID
-        if (data.emergencyId) {
-          setEmergencyId(data.emergencyId);
+        const emergencyIdFromApi =
+          data.emergencyId || data.emergency_id || data.id;
 
-          // Also call the parent callback if provided
-          if (onEmergencyCreated) {
-            onEmergencyCreated(data.emergencyId, data);
-          }
+        const emergencyLocation = {
+          lat:
+            (data.location && data.location.lat) ??
+            data.latitude ??
+            data.lat ??
+            (markerPosition && markerPosition.lat) ??
+            (formData.latitude ? parseFloat(formData.latitude) : 0),
+          lng:
+            (data.location && data.location.lng) ??
+            data.longitude ??
+            data.lng ??
+            (markerPosition && markerPosition.lng) ??
+            (formData.longitude ? parseFloat(formData.longitude) : 0),
+        };
+
+        const triageData = {
+          ...data,
+          location: emergencyLocation,
+        };
+
+        if (emergencyIdFromApi) {
+          setEmergencyId(emergencyIdFromApi);
+        }
+
+        if (onEmergencyCreated && emergencyIdFromApi) {
+          onEmergencyCreated(emergencyIdFromApi, triageData);
         }
       },
       onError: (error) => {
@@ -953,14 +971,14 @@ export default function EmergencyForm({ onEmergencyCreated }) {
                   const query = e.target.value;
                   setSearchQuery(query);
                   if (query.trim()) {
-                    debouncedSearch(query); // calls Nominatim API
-                    setShowSuggestions(true); // show dropdown immediately
+                    debouncedSearch(query);
+                    setShowSuggestions(true);
                   } else {
                     setSearchResults([]);
                     setShowSuggestions(false);
                   }
                 }}
-                style={styles.searchInput} 
+                style={styles.searchInput}
                 placeholder="Type city, landmark, or area name"
               />
 
@@ -994,7 +1012,6 @@ export default function EmergencyForm({ onEmergencyCreated }) {
                       const lat = parseFloat(result.lat);
                       const lng = parseFloat(result.lon);
 
-                      // Update form & map instantly
                       setFormData({
                         ...formData,
                         latitude: lat.toString(),
@@ -1005,7 +1022,6 @@ export default function EmergencyForm({ onEmergencyCreated }) {
                       setMapCenter([lat, lng]);
                       setMarkerPosition({ lat, lng });
 
-                      // Clear search results & query
                       setSearchResults([]);
                       setSearchQuery("");
                       setShowMap(true);
@@ -1243,7 +1259,6 @@ const styles = {
     resize: "vertical",
     fontFamily: "Arial",
   },
-
   // IMPROVED SYMPTOM AUTOCOMPLETE STYLES
   symptomHelpBox: {
     backgroundColor: "#1e3a1e",
@@ -1400,7 +1415,6 @@ const styles = {
     border: "1px solid #FF9800",
     textAlign: "center",
   },
-
   locationButtons: {
     display: "flex",
     gap: "10px",
